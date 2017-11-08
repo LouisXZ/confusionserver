@@ -55,7 +55,11 @@ favoriteRouter.route('/')
                                                 next(err);
                                                 reject();
                                             } else {
-                                                count -= 1;
+                                                if (i === req.body.length - 1) {
+                                                    res.statusCode = 200;
+                                                    res.setHeader('Content-Type', 'application/json');
+                                                    res.json(favorite); 
+                                                }
                                                 resolve();
                                             }
                                         })
@@ -72,12 +76,16 @@ favoriteRouter.route('/')
                                     var newFavorite = new Favorites();
                                     newFavorite.user = userId;
                                     newFavorite.dishes.push(dishId);
-                                    newFavorite.save((err, newFavorite) => {
+                                    newFavorite.save((err, favorite) => {
                                         if (err) {
                                             next(err);
                                             reject();
                                         } else {
-                                            count -= 1;
+                                            if (i === req.body.length - 1) {
+                                                res.statusCode = 200;
+                                                res.setHeader('Content-Type', 'application/json');
+                                                res.json(favorite); 
+                                            } 
                                             resolve();
                                         }
                                     })
@@ -90,30 +98,23 @@ favoriteRouter.route('/')
         }, (err) => next(err))
         .catch((err) => next(err));
     };
-    // Waiting the variable count to be 0.
-    await new Promise((resolve, reject) => {
-        if (count === 0) {
-            Favorites.findOne({ user: userId })
-                .then((favorite) => {
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json(favorite);
-                    resolve();
-                }, (err) => next(err))
-                .catch((err) => next(err));
-        }
-    });
 })
 .delete(authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({ user: req.user._id })
         .then((favorite) => {
-            favorite.remove()
-                .then((favorite) => {
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json(favorite);
-                }, (err) => next(err))
-                .catch((err) => next(err));
+            if (favorite != null) {
+                favorite.remove()
+                    .then((favorite) => {
+                        res.statusCode = 200;
+                        res.setHeader('Content-Type', 'application/json');
+                        res.json(favorite);
+                    }, (err) => next(err))
+                    .catch((err) => next(err));
+            } else {
+                res.statusCode = 403;
+                res.end('The list of favorites does not exist.');
+            }
+            
         }, (err) => next(err))
         .catch((err) => next(err));
 });
