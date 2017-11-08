@@ -4,15 +4,12 @@ const mongoose = require('mongoose');
 const Favorites = require('../models/favorite');
 const Dishes = require('../models/dishes');
 const authenticate = require('../authenticate');
-// const cors = require('./cors');
+
 const favoriteRouter = express.Router();
 
 favoriteRouter.use(bodyParser.json());
 
 favoriteRouter.route('/')
-// .options(cors.corsWithOptions, (req, res) => {
-//     res.sendStatus(200); 
-// })
 .get(authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({ user: req.user._id })
         .populate('user')
@@ -34,15 +31,12 @@ favoriteRouter.route('/')
     for (var i=0; i < req.body.length; i++) {
         var dishId = req.body[i]._id;
         await new Promise((resolve, reject) => {
-            // console.log('Doing ' + dishId);
             Favorites.findOne({ user: userId })
                 .then((favorite) => {
-                    // console.log('Entering... ' + dishId);
                     Dishes.findById(dishId)
                         .then((dish) => {
                             // The dish is not a valid dish.
                             if (dish == null) {
-                                // console.log('dish == null');
                                 res.statusCode = 403;
                                 res.end('Dish ' + dishId +
                                     ' is not a valid dish.'
@@ -52,10 +46,8 @@ favoriteRouter.route('/')
                                 // The dish is a valid dish.
                                 // The user has a list of favorites.
                                 if (favorite != null) {
-                                    // console.log('favorite != null');
                                     // The dish does not exist in the list of favorites.
                                     if (favorite.dishes.indexOf(dishId) === -1) {
-                                        // console.log(dishId + ' does not exist in the list of favorites.');
                                         favorite.dishes.push(dishId);
                                         favorite.save((err, favorite) => {
                                             if (err) {
@@ -63,11 +55,9 @@ favoriteRouter.route('/')
                                                 next(err);
                                                 reject();
                                             } else {
-                                                count = count - 1;
-                                                // res.write('Dish ' + dishId + ' has been added to favorites.\n');
+                                                count -= 1;
                                                 resolve();
                                             }
-
                                         })
                                     } else {
                                         // The dish exists in the list of favorites.
@@ -79,7 +69,6 @@ favoriteRouter.route('/')
                                     }
                                 } else {
                                     // The user does not have a list of favorites.
-                                    // console.log('The user does not have a list of favorites.');
                                     var newFavorite = new Favorites();
                                     newFavorite.user = userId;
                                     newFavorite.dishes.push(dishId);
@@ -88,8 +77,7 @@ favoriteRouter.route('/')
                                             next(err);
                                             reject();
                                         } else {
-                                            count = count - 1;
-                                            // res.write('Dish ' + dishId + ' has been added to favorites.\n');
+                                            count -= 1;
                                             resolve();
                                         }
                                     })
