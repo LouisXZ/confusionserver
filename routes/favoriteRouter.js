@@ -38,8 +38,11 @@ favoriteRouter.route('/')
                             // The dish is not a valid dish.
                             if (dish == null) {
                                 res.statusCode = 403;
+                                for (var j=0; j < i; j++) {
+                                    res.write('Dish ' + req.body[j]._id + ' has been added.\n');
+                                }
                                 res.end('Dish ' + dishId +
-                                    ' is not a valid dish.'
+                                    ' is not a valid dish. Ignoring it. Halt.'
                                 );
                                 return;
                             } else {
@@ -51,7 +54,6 @@ favoriteRouter.route('/')
                                         favorite.dishes.push(dishId);
                                         favorite.save((err, favorite) => {
                                             if (err) {
-                                                console.log('err');
                                                 next(err);
                                                 reject();
                                             } else {
@@ -66,8 +68,11 @@ favoriteRouter.route('/')
                                     } else {
                                         // The dish exists in the list of favorites.
                                         res.statusCode = 403;
+                                        for (var j=0; j < i; j++) {
+                                            res.write('Dish ' + req.body[j]._id + ' has been added.\n');
+                                        }
                                         res.end('Dish ' + dishId +
-                                            ' already exists in the list of favorites.'
+                                            ' already exists in the list of favorites. Ignoring it. Halt.'
                                         );
                                         return;
                                     }
